@@ -2,7 +2,7 @@
 
 Smart contracts of Clanker v3.1
 
-Clanker is an autonomous agent for deploying tokens. Currently, users may request clanker to deploy an ERC-20 token on Base by tagging @clanker on Farcaster, on our website [clanker.world](https://clanker.world), by using one of our interface partners, or through the smart contracts directly. This repo contains the onchain code utilized by the clanker agent for token deployment, vaulting, and LP fee distribution.
+Clanker is an autonomous agent for deploying tokens. Currently, users may request clanker to deploy an ERC-20 token on Base by tagging @clanker on Farcaster, on our website [clanker.world](https://www.clanker.world/deploy), by using one of our interface partners, or through the smart contracts directly. This repo contains the onchain code utilized by the clanker agent for token deployment, vaulting, and LP fee distribution.
 
 Documentation for the v3.1.0 contracts can be found [here](specs/v3_1_0.md).
 
@@ -15,7 +15,7 @@ As Clanker deploys tokens, it initiates 1% fee Uniswap V3 pools on Base. As each
 
 ## Deployed Contracts
 
-Check out our [dune dashboard](https://dune.com/clanker_protection_team/clanker-fees) for token stats and our website [clanker.world](https://clanker.world) to see the clanker tokens in action and to launch a token from a form interface.
+Check out our [dune dashboards](https://dune.com/clanker_protection_team) for token stats and our website [clanker.world](https://clanker.world) to see the clanker tokens in action and to launch a token from a form interface.
 
 ### v3.1.0 (Base Mainnet)
 Base Mainnet:
