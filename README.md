@@ -4,7 +4,7 @@ Smart contracts of Clanker v3.1
 
 Clanker is an autonomous agent for deploying tokens. Currently, users may request clanker to deploy an ERC-20 token on Base by tagging @clanker on Farcaster, on our website [clanker.world](https://www.clanker.world/deploy), by using one of our interface partners, or through the smart contracts directly. This repo contains the onchain code utilized by the clanker agent for token deployment, vaulting, and LP fee distribution.
 
-Documentation for the v3.1.0 contracts can be found [here](specs/v3_1_0.md).
+Documentation for the v3.1.0 contracts can be found [here](specs/v3_1_0.md) and our general docs can be found [here](https://clanker.gitbook.io/clanker-documentation).
 
 
 ## Fee structure and rewards
@@ -28,4 +28,61 @@ Base Mainnet:
 - LpLockerv2 (v3.1.0): [0xa1da0600Eb4A9F3D4a892feAa2c2caf80A4A2f14](https://sepolia.basescan.org/address/0xa1da0600Eb4A9F3D4a892feAa2c2caf80A4A2f14)
 - ClankerVault (v3.1.0): [0xA9C0a423f0092176fC48d7B50a1fCae8cf5BB441](https://sepolia.basescan.org/address/0xA9C0a423f0092176fC48d7B50a1fCae8cf5BB441)
 
-If you'd like these contracts on another chain, please let us know! For superchain purposes, we need to ensure that the Clanker contracts have the same address.
+If you'd like these contracts on another chain, [please reach out to us](https://clanker.gitbook.io/clanker-documentation/references/contact)! For superchain purposes, we need to ensure that the Clanker contracts have the same address.
+
+
+## Usage
+
+Token deployers should use the `Clanker::deployToken()` function to deploy tokens.
+
+Note that the follow parameters are needed for deployment:
+```solidity
+/**
+ * Configuration settings for token creation
+ */
+
+struct RewardsConfig {
+    uint256 creatorReward;
+    address creatorAdmin;
+    address creatorRewardRecipient;
+    address interfaceAdmin;
+    address interfaceRewardRecipient;
+}
+
+struct TokenConfig {
+    string name;
+    string symbol;
+    bytes32 salt;
+    string image;
+    string metadata;
+    string context;
+    uint256 originatingChainId;
+}
+
+struct VaultConfig {
+    uint8 vaultPercentage;
+    uint256 vaultDuration;
+}
+
+struct PoolConfig {
+    address pairedToken;
+    int24 tickIfToken0IsNewToken;
+}
+
+struct InitialBuyConfig {
+    uint24 pairedTokenPoolFee;
+    uint256 pairedTokenSwapAmountOutMinimum;
+}
+
+struct DeploymentConfig {
+    TokenConfig tokenConfig;
+    VaultConfig vaultConfig;
+    PoolConfig poolConfig;
+    InitialBuyConfig initialBuyConfig;
+    RewardsConfig rewardsConfig;
+}
+
+function deployToken(DeploymentConfig tokenConfig) external payable {...}
+```
+
+Explanation of the parameters are in the [specs](specs/v3_1_0.md) folder. Please [reach out to us](https://clanker.gitbook.io/clanker-documentation/references/contact) if you have any questions! 
