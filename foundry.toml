@@ -1,0 +1,15 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+viaIR = true
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 20_000
+
+
+[fmt]
+line_length = 100
+number_underscore = "thousands"
+sort_imports = true
+tab_width = 4
