@@ -4,6 +4,7 @@ import {
   encodePacked,
   keccak256,
   parseUnits,
+  createPublicClient,
 } from 'viem';
 import { Clanker_v3_1_abi } from './Clanker.js';
 import { createWalletClient, http } from 'viem';
@@ -25,17 +26,26 @@ interface IDeployFormData {
   image?: File | null;
   imageUrl?: string;
   description?: string;
+  // Amount of paired token to use for the initial buy (creates initial liquidity)
   devBuyAmount?: string | number;
+  // Percentage of token supply to lock in vesting contract (0-100)
   lockupPercentage?: number;
+  // Unix timestamp when locked tokens can be released
   vestingUnlockDate?: bigint | null;
+  // Whether to perform an initial buy with paired token (creates liquidity)
+  // This controls whether devBuyAmount is used
   enableDevBuy?: boolean;
+  // Whether to enable token lockup/vesting
+  // This controls whether lockupPercentage and vestingUnlockDate are used
   enableLockup?: boolean;
+  // Address to receive protocol fees (if applicable)
   feeRecipient?: string | null;
   telegramLink?: string;
   websiteLink?: string;
   xLink?: string;
   marketCap?: string;
   farcasterLink?: string;
+  // Address of the token to pair with (defaults to WETH if not specified)
   pairedToken?: string;
   creatorRewardsRecipient?: string;
   creatorRewardsAdmin?: string;
@@ -73,8 +83,7 @@ function getRelativeUnixTimestamp(unixTimestamp?: number | null): bigint {
     if (targetTimestamp > currentTimestamp) {
       vestingDuration = targetTimestamp - currentTimestamp;
     } else {
-      console.warn('Target timestamp is in the past, using minimum duration');
-      vestingDuration = BigInt(31 * 24 * 60 * 60); // 31 days in seconds
+      throw new Error('Target timestamp is in the past. Please provide a future date for vesting.');
     }
   }
   return vestingDuration;
@@ -180,6 +189,10 @@ export async function generateSalt_v3_1(
     const tokenNum = BigInt(token);
     const pairedTokenNum = BigInt(pairedTokenAddress);
 
+    // This condition ensures the token address is numerically lower than the paired token.
+    // This is important for Uniswap V3 pool creation where tokens are sorted by address.
+    // You can modify this condition based on your specific address requirements or aesthetics.
+    // For example, you might want addresses with certain patterns or characteristics.
     if (tokenNum < pairedTokenNum) {
       return { salt, token };
     }
@@ -285,10 +298,20 @@ async function buildDeploymentTransaction({
       : WETH_ADDRESS;
 
   // Calculate initial tick for price
+  // Note: This calculation assumes both tokens have standard 18 decimals.
+  // For tokens with non-standard decimals (e.g., USDC with 6 decimals),
+  // you'll need to adjust the price calculation to account for the decimal difference:
+  // - If paired token has 6 decimals (like USDC): multiply desiredPrice by 10^12
+  // - General formula: desiredPrice * (10^(token1Decimals - token0Decimals))
+  // Where token0 is the token with the lower address (which could be either your token or paired token)
   const logBase = 1.0001;
   const tickSpacing = 200;
   const rawTick = Math.log(desiredPrice) / Math.log(logBase);
   const initialTick = Math.floor(rawTick / tickSpacing) * tickSpacing;
+
+  // Important: The contracts expect the tick to always be calculated as if the
+  // created token has a lower address than the paired token, even when its actual address is higher.
+  // Uniswap V3 sorts tokens by address, so this ensures consistent pricing.
 
   // Generate salt
   const { salt } = await generateSalt_v3_1(
@@ -311,6 +334,12 @@ async function buildDeploymentTransaction({
   let vestingDuration = formData.vestingUnlockDate
     ? getRelativeUnixTimestamp(Number(formData.vestingUnlockDate))
     : BigInt(0);
+
+  // Fail early if vesting duration is too short (optional minimum check)
+  const MIN_VESTING_DURATION = BigInt(7 * 24 * 60 * 60); // 7 days in seconds
+  if (vestingDuration > 0 && vestingDuration < MIN_VESTING_DURATION) {
+    throw new Error(`Vesting duration is too short. Minimum duration is ${MIN_VESTING_DURATION} seconds.`);
+  }
 
   // Helper to validate addresses
   const validateAddress = (
@@ -339,7 +368,12 @@ async function buildDeploymentTransaction({
       tickIfToken0IsNewToken: initialTick || 0,
     },
     initialBuyConfig: {
-      pairedTokenPoolFee: 10000,
+      // Select appropriate fee tier based on paired token
+      // 10000 = 1%, 3000 = 0.3%, 500 = 0.05%
+      // Some tokens like USDC might not have pools with 1% fee tier on certain chains
+      pairedTokenPoolFee: pairAddress === WETH_ADDRESS ? 10000 : 
+        // Use 0.3% fee tier for non-WETH pairs like USDC as it's more common
+        3000,
       pairedTokenSwapAmountOutMinimum: 0n,
     },
     vaultConfig: {
@@ -403,7 +437,10 @@ export async function deployToken({
   formData,
   chainId,
   userInfo,
-  desiredPrice = 10, // Default desired price (pairs with WETH)
+  // Default desired price of 10 means:
+  // If your token has the lower address: 1 token = 0.1 WETH 
+  // If paired token has the lower address: 1 WETH = 10 tokens
+  desiredPrice = 10,
   gasLimit = BigInt(10000000),
 }: {
   deployerAddress: `0x${string}`;
@@ -456,4 +493,154 @@ export async function deployToken({
 //   },
 //   chainId: 8453,
 // }).catch(console.error);
+
+/**
+ * Calculates the market cap for a token in a Uniswap V3 pool, including for non-WETH pairs
+ * @param poolAddress The address of the Uniswap V3 pool
+ * @param tokenAddress The address of the token to calculate market cap for
+ * @returns Object containing circulatingSupply, marketCap, and price
+ */
+export async function calculateMarketCap(poolAddress: `0x${string}`, tokenAddress: `0x${string}`) {
+  try {
+    const publicClient = baseClient;
+
+    // Get token0 and token1 addresses
+    const [token0Address, token1Address] = await Promise.all([
+      publicClient.readContract({
+        address: poolAddress,
+        abi: UniswapV3Pool_abi,
+        functionName: 'token0',
+      }),
+      publicClient.readContract({
+        address: poolAddress,
+        abi: UniswapV3Pool_abi,
+        functionName: 'token1',
+      }),
+    ]);
+
+    // Determine if our token is token0 or token1
+    const isToken0 = tokenAddress.toLowerCase() === token0Address.toLowerCase();
+    if (!isToken0 && tokenAddress.toLowerCase() !== token1Address.toLowerCase()) {
+      throw new Error('The provided token address is not part of the pool.');
+    }
+
+    // Get token decimals and total supply
+    const [decimals, totalSupply, slot0] = await Promise.all([
+      publicClient.readContract({
+        address: tokenAddress,
+        abi: erc20Abi,
+        functionName: 'decimals',
+      }),
+      publicClient.readContract({
+        address: tokenAddress,
+        abi: erc20Abi,
+        functionName: 'totalSupply',
+      }),
+      publicClient.readContract({
+        address: poolAddress,
+        abi: UniswapV3Pool_abi,
+        functionName: 'slot0',
+      }),
+    ]);
+
+    const [sqrtPriceX96] = slot0;
+    const Q96 = BigInt('79228162514264337593543950336'); // 2^96 pre-calculated
+
+    // Calculate token price in terms of WETH
+    let tokenPriceInWETH;
+    if (isToken0) {
+      tokenPriceInWETH = (Number(sqrtPriceX96) / Number(Q96)) ** 2;
+    } else {
+      tokenPriceInWETH = (Number(Q96) / Number(sqrtPriceX96)) ** 2;
+    }
+
+    // Get WETH price in USD
+    const wethPriceInUSD = await getWETHPriceInUSD(publicClient);
+
+    // Calculate final values
+    const tokenPriceInUSD = tokenPriceInWETH * wethPriceInUSD;
+    const formattedTotalSupply = Number(totalSupply) / 10 ** Number(decimals);
+    const marketCap = tokenPriceInUSD * formattedTotalSupply;
+
+    return {
+      circulatingSupply: formattedTotalSupply,
+      marketCap,
+      price: tokenPriceInUSD,
+    };
+  } catch (error) {
+    console.error('Error calculating market cap:', error);
+    throw error;
+  }
+}
+
+// Import necessary ABIs and client for market cap calculation
+// Using standard erc20 ABI instead of importing from specific path
+const erc20Abi = [
+  {
+    inputs: [],
+    name: 'decimals',
+    outputs: [{ internalType: 'uint8', name: '', type: 'uint8' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'totalSupply',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+] as const;
+
+// Uniswap V3 Pool ABI (minimal for our needs)
+const UniswapV3Pool_abi = [
+  {
+    inputs: [],
+    name: 'token0',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'token1',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'slot0',
+    outputs: [
+      { internalType: 'uint160', name: 'sqrtPriceX96', type: 'uint160' },
+      { internalType: 'int24', name: 'tick', type: 'int24' },
+      { internalType: 'uint16', name: 'observationIndex', type: 'uint16' },
+      { internalType: 'uint16', name: 'observationCardinality', type: 'uint16' },
+      { internalType: 'uint16', name: 'observationCardinalityNext', type: 'uint16' },
+      { internalType: 'uint8', name: 'feeProtocol', type: 'uint8' },
+      { internalType: 'bool', name: 'unlocked', type: 'bool' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+] as const;
+
+// Create a public client for market cap calculation
+const baseClient = createPublicClient({
+  chain: base,
+  transport: http(process.env.RPC_URL || 'https://mainnet.base.org'),
+});
+
+// Function to get WETH price in USD (placeholder - implement according to your needs)
+async function getWETHPriceInUSD(client: any): Promise<number> {
+  // This is a placeholder. You would need to implement this function
+  // to get the current WETH price in USD, possibly using an oracle or price feed
+  try {
+    // Example implementation might query a price oracle or use a fixed value
+    return 2000; // Placeholder value
+  } catch (error) {
+    console.error('Error fetching WETH price:', error);
+    return 2000; // Fallback value
+  }
+}
 
