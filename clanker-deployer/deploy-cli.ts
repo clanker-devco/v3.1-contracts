@@ -71,7 +71,10 @@ async function main() {
   
   console.log('Deploying token with configuration:', formData);
 
-  const { desiredPrice } = getDesiredPriceAndPairAddress(config.pair as TokenPair);
+  const { desiredPrice, pairAddress } = getDesiredPriceAndPairAddress(config.pair as TokenPair);
+  
+  // Set the paired token address based on the selected pair
+  formData.pairedToken = pairAddress;
   
   try {
     const txHash = await deployToken({

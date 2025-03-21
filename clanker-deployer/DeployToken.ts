@@ -18,8 +18,8 @@ import {
   IClankerSocialContext,
   IUserInfo,
 } from './types.js';
-import { CLANKER_FACTORY_V3_1, WETH_ADDRESS } from 'constants.js';
-import { getRelativeUnixTimestamp } from 'utils.js';
+import { CLANKER_FACTORY_V3_1, WETH_ADDRESS } from './constants.js';
+import { getRelativeUnixTimestamp } from './utils.js';
 
 async function predictToken_v3_1(
   admin: `0x${string}`,
@@ -93,7 +93,6 @@ export async function generateSalt_v3_1(
   metadata: string,
   context: string,
   supply: bigint,
-  pairedTokenAddress: `0x${string}`,
   initialSupplyChainId: bigint
 ): Promise<{ salt: `0x${string}`; token: `0x${string}` }> {
   const startingPoint = BigInt(
@@ -103,36 +102,21 @@ export async function generateSalt_v3_1(
         .join('')
   );
   let i = startingPoint;
-  while (true) {
-    const salt = `0x${i.toString(16).padStart(64, '0')}` as `0x${string}`;
+  const salt = `0x${i.toString(16).padStart(64, '0')}` as `0x${string}`;
 
-    const token = await predictToken_v3_1(
-      admin,
-      name,
-      symbol,
-      image,
-      metadata,
-      context,
-      supply,
-      salt,
-      initialSupplyChainId
-    );
+  const token = await predictToken_v3_1(
+    admin,
+    name,
+    symbol,
+    image,
+    metadata,
+    context,
+    supply,
+    salt,
+    initialSupplyChainId
+  );
 
-    const tokenNum = BigInt(token);
-    const pairedTokenNum = BigInt(pairedTokenAddress);
-
-    // This condition ensures the token address is numerically lower than the paired token.
-    // This is important for Uniswap V3 pool creation where tokens are sorted by address.
-    // You can modify this condition based on your specific address requirements or aesthetics.
-    // For example, you might want addresses with certain patterns or characteristics.
-    if (tokenNum < pairedTokenNum) {
-      return { salt, token };
-    }
-
-    i += BigInt(
-      Math.floor(crypto.getRandomValues(new Uint8Array(1))[0] % 1000) + 1
-    );
-  }
+  return { salt, token };
 }
 
 // Replace the dummy transaction sender with a real implementation
@@ -254,7 +238,6 @@ async function buildDeploymentTransaction({
     JSON.stringify(clankerMetadata),
     JSON.stringify(clankerSocialContext),
     BigInt(parseUnits('100000000000', 18).toString()),
-    pairAddress,
     BigInt(chainId)
   );
 

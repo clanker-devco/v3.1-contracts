@@ -8,4 +8,6 @@ after that, check out the `DeployToken.ts` and `deploy-cli.ts` files to get a gi
 
 when you're ready, run a command like this: `npm run deploy-token -- --name "My Awesome Token" --symbol "MAT" --description "This is my awesome token" --devBuyAmount "0" --creatorReward 30`
 
+pair with another token like NATIVE: `npm run deploy-token -- --name "My Awesome Token" --symbol "MAT" --description "This is my awesome token" --devBuyAmount "0" --creatorReward 30 --pair "HIGHER"`
+
 clank clank
