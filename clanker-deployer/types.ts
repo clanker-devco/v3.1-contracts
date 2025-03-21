@@ -16,17 +16,16 @@ export interface IDeployFormData {
   description?: string;
   // Amount of paired token to use for the initial buy (creates initial liquidity)
   devBuyAmount?: string | number;
-  // Percentage of token supply to lock in vesting contract (0-100)
+  // Percentage of token supply to lock in vesting contract (0-30)
   lockupPercentage?: number;
   // Unix timestamp when locked tokens can be released
   vestingUnlockDate?: bigint | null;
   telegramLink?: string;
   websiteLink?: string;
   xLink?: string;
-  marketCap?: string;
   farcasterLink?: string;
   // Address of the token to pair with (defaults to WETH if not specified)
-  pairedToken?: string;
+  pairedToken?: TokenPair;
   creatorRewardsRecipient?: string;
   creatorRewardsAdmin?: string;
   creatorReward?: number;

@@ -2,12 +2,13 @@
 
 welcome to the example js/ts code! 
 
-the first step here is you'll want to make a .env out of the example.env
+the first step here is you'll want to make a .env out of the example.env and run `pnpm install` (or `npm install`)
 
-after that, check out the `DeployToken.ts` and `deploy-cli.ts` files to get a gist of what's going on to build a clanker
 
-when you're ready, run a command like this: `npm run deploy-token -- --name "My Awesome Token" --symbol "MAT" --description "This is my awesome token" --devBuyAmount "0" --creatorReward 30`
+after that, add your token deployment info into `deploy-cli.ts` to configure interface and creator information
 
-pair with another token like NATIVE: `npm run deploy-token -- --name "My Awesome Token" --symbol "MAT" --description "This is my awesome token" --devBuyAmount "0" --creatorReward 30 --pair "HIGHER"`
+before running, check out the `DeployToken.ts` and files to get a gist of what's going on to build a clanker
+
+when you're ready, run this like this: `npm run deploy-token`
 
 clank clank
