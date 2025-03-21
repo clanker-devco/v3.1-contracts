@@ -1,6 +1,8 @@
 // Use Node.js ESM format for imports
 import { deployToken } from './DeployToken.js';
 import * as dotenv from 'dotenv';
+import { IDeployFormData, TokenPair } from './types.js';
+import { getDesiredPriceAndPairAddress } from './utils.js';
 
 // Load environment variables
 dotenv.config();
@@ -18,19 +20,26 @@ async function main() {
     lockupPercentage: 20,
     creatorReward: 40,
     chainId: 8453, // Base mainnet
-    devBuyAmount: '0.01',
-    vestingUnlockDate: 1774054678, // at least 30 days from now
+    devBuyAmount: '0', // denominated in ETH  (0.01 = 0.01 ETH)
+    vestingUnlockDate: BigInt(1774054678), // at least 30 days from now, unix timestamp
+    pair: 'WETH',
+    creatorRewardsRecipient: '',
+    creatorRewardsAdmin: '',
+    interfaceAdmin: '',
+    interfaceRewardRecipient: '',
   };
   
   // Override defaults with provided args
-  const config: any = { ...defaultConfig };
+  const config: Record<string, any> = { ...defaultConfig };
   
   for (let i = 0; i < args.length; i += 2) {
     const key = args[i].replace('--', '');
     const value = args[i + 1];
     
-    if (key === 'lockupPercentage' || key === 'creatorReward' || key === 'chainId' || key === 'vestingUnlockDate') {
+    if (key === 'lockupPercentage' || key === 'creatorReward' || key === 'chainId') {
       config[key] = parseInt(value);
+    } else if (key === 'vestingUnlockDate') {
+      config[key] = BigInt(parseInt(value));
     } else if (key === 'devBuyAmount') {
       config[key] = value;
     } else {
@@ -45,7 +54,7 @@ async function main() {
   }
   
   // Prepare form data
-  const formData = {
+  const formData: IDeployFormData = {
     name: config.name,
     symbol: config.symbol,
     imageUrl: config.imageUrl,
@@ -53,7 +62,7 @@ async function main() {
     lockupPercentage: config.lockupPercentage,
     creatorReward: config.creatorReward,
     devBuyAmount: config.devBuyAmount,
-    vestingUnlockDate: BigInt(config.vestingUnlockDate),
+    vestingUnlockDate: config.vestingUnlockDate,
     creatorRewardsRecipient: config.creatorRewardsRecipient || deployerAddress,
     creatorRewardsAdmin: config.creatorRewardsAdmin || deployerAddress,
     interfaceAdmin: config.interfaceAdmin || deployerAddress,
@@ -61,13 +70,15 @@ async function main() {
   };
   
   console.log('Deploying token with configuration:', formData);
+
+  const { desiredPrice } = getDesiredPriceAndPairAddress(config.pair as TokenPair);
   
   try {
     const txHash = await deployToken({
       deployerAddress,
       formData,
       chainId: config.chainId,
-      desiredPrice: config.desiredPrice || 10,
+      desiredPrice,
     });
     
     console.log(`✅ Token deployment transaction sent successfully!`);
@@ -79,3 +90,4 @@ async function main() {
 }
 
 main().catch(console.error); 
+
