@@ -5,9 +5,9 @@ import { base } from 'viem/chains';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { IDeployFormData, IClankerSocialContext } from './types.js';
+import { IDeployFormData, IClankerSocialContext } from './helpers/types.js';
 import { CLANKER_FACTORY_V3_1 } from './constants.js';
-import { buildDeploymentTransaction } from './build-transaction.js';
+import { buildDeploymentTransaction } from './helpers/build-transaction.js';
 
 async function predictToken_v3_1(
   admin: `0x${string}`,

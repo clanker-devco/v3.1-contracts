@@ -1,7 +1,7 @@
 // Use Node.js ESM format for imports
 import { deployToken } from './DeployToken.js';
 import * as dotenv from 'dotenv';
-import { IClankerSocialContext, IDeployFormData, IUserInfo } from './types.js';
+import { IClankerSocialContext, IDeployFormData } from './helpers/types.js';
 
 // Load environment variables
 dotenv.config();
@@ -20,7 +20,7 @@ async function main() {
     lockupPercentage: 20, // 0-30
     creatorReward: 40, // 0-80
     devBuyAmount: '0', // denominated in ETH  (0.01 = 0.01 ETH)
-    vestingUnlockDate: 1774054678n, // at least 30 days from now, unix timestamp
+    vestingUnlockDate: 1774054678n, // at least 30 days from now, unix timestamp of vesting unlock date
     pairedToken: 'WETH', // WETH, DEGEN, ANON, HIGHER, CLANKER, BTC, NATIVE
     // optional project metadata
     description: 'This is a sample token',
@@ -28,6 +28,9 @@ async function main() {
     websiteLink: 'https://example.com',
     xLink: 'https://x.com/testuser',
     farcasterLink: 'https://farcaster.com/testuser',
+    // deployment config (optional, fee tier of paired token pool)
+    pairedTokenPoolFee: 10000, // 10000 = 1%
+    pairedTokenDecimals: 18, // decimals of the paired token
   };
 
   // optional social context for the deployment

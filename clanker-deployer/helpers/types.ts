@@ -31,6 +31,8 @@ export interface IDeployFormData {
   creatorReward?: number;
   interfaceAdmin?: string;
   interfaceRewardRecipient?: string;
+  pairedTokenPoolFee?: number;
+  pairedTokenDecimals?: number;
 }
 
 export interface IClankerMetadata {

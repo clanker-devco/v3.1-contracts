@@ -1,4 +1,4 @@
-import { TokenPair } from 'types.js';
+import { TokenPair } from 'helpers/types.js';
 import {
   ANON_ADDRESS,
   CB_BTC_ADDRESS,

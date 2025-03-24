@@ -6,12 +6,12 @@ import {
   IClankerSocialContext,
   TokenPair,
 } from './types.js';
-import { CLANKER_FACTORY_V3_1 } from './constants.js';
+import { CLANKER_FACTORY_V3_1 } from '../constants.js';
 import {
   getDesiredPriceAndPairAddress,
   getRelativeUnixTimestamp,
-} from './utils.js';
-import { generateSalt_v3_1 } from './DeployToken.js';
+} from '../utils.js';
+import { generateSalt_v3_1 } from '../DeployToken.js';
 
 /**
  * Builds a token deployment transaction
@@ -67,10 +67,25 @@ export async function buildDeploymentTransaction({
   );
 
   // Calculate initial tick for price
-  const logBase = 1.0001;
-  const tickSpacing = 200;
-  const rawTick = Math.log(desiredPrice) / Math.log(logBase);
-  const initialTick = Math.floor(rawTick / tickSpacing) * tickSpacing;
+  let initialTick = 0;
+  if (formData.pairedTokenDecimals === 18) {
+    const logBase = 1.0001;
+    const tickSpacing = 200;
+    const rawTick = Math.log(desiredPrice) / Math.log(logBase);
+    initialTick = Math.floor(rawTick / tickSpacing) * tickSpacing;
+  } else {
+    // TODO: adjust for non-18 decimals
+    console.error('Non-18 decimals not supported yet');
+    throw new Error('Non-18 decimals not supported yet');
+    // const decimals = formData.pairedTokenDecimals || 18;
+    // const logBase = 1.0001;
+    // const tickSpacing = 200;
+    // // Adjust price based on decimal difference from 18
+    // const decimalAdjustment = Math.pow(10, 18 - decimals);
+    // const adjustedPrice = desiredPrice * decimalAdjustment;
+    // const rawTick = Math.log(adjustedPrice) / Math.log(logBase);
+    // initialTick = Math.floor(rawTick / tickSpacing) * tickSpacing;
+  }
 
   // Generate salt
   const { salt } = await generateSalt_v3_1(
@@ -128,7 +143,7 @@ export async function buildDeploymentTransaction({
       tickIfToken0IsNewToken: initialTick,
     },
     initialBuyConfig: {
-      pairedTokenPoolFee: 10000, // 10000 = 1%
+      pairedTokenPoolFee: formData.pairedTokenPoolFee || 10000, // 10000 = 1%
       pairedTokenSwapAmountOutMinimum: 0n,
     },
     vaultConfig: {
