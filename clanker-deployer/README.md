@@ -8,6 +8,6 @@ after that, add your token deployment info into `deploy-cli.ts` to configure int
 
 before running, check out the `DeployToken.ts` and files to get a gist of what's going on to build a clanker
 
-when you're ready, run this like this: `npm run deploy-token`
+when you're ready, run this like this: `npm run deploy-token` or `npm run deploy-token-sdk`
 
 clank clank
