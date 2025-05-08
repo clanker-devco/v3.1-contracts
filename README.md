@@ -28,7 +28,7 @@ Base Mainnet:
 - LpLockerv2 (v3.1.0): [0xa1da0600Eb4A9F3D4a892feAa2c2caf80A4A2f14](https://sepolia.basescan.org/address/0xa1da0600Eb4A9F3D4a892feAa2c2caf80A4A2f14)
 - ClankerVault (v3.1.0): [0xA9C0a423f0092176fC48d7B50a1fCae8cf5BB441](https://sepolia.basescan.org/address/0xA9C0a423f0092176fC48d7B50a1fCae8cf5BB441)
 
-- ### v3.1.0 (Monad Testnet) https://testnet.monadexplorer.com/address/0x9505A57Bf782058890f078bE301575cD75045a9b
+- ### v3.1.0 (Monad Testnet)
 - Clanker Factory (v3.1.0): [0xA0C65813DD1Cde7092922a57548Ec1eD25994318](https://testnet.monadexplorer.com/address/0xA0C65813DD1Cde7092922a57548Ec1eD25994318)
 - LpLockerv2 (v3.1.0): [0xcd89C55d36097a64f777066A6cc8F2c31B7541F7](https://testnet.monadexplorer.com/address/0xcd89C55d36097a64f777066A6cc8F2c31B7541F7)
 - ClankerVault (v3.1.0): [0x9505A57Bf782058890f078bE301575cD75045a9b](https://testnet.monadexplorer.com/address/0x9505A57Bf782058890f078bE301575cD75045a9b)
