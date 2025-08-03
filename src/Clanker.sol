@@ -145,16 +145,6 @@ contract Clanker is Ownable, ReentrancyGuard, IClanker {
         ILpLockerv2(deploymentInfo.locker).collectRewards(deploymentInfo.positionId);
     }
 
-    // deploy a token on a non-originating chain with 0 supply,
-    // this can be used to bridge tokens between superchains.
-    function deployTokenZeroSupply(TokenConfig memory tokenConfig, address tokenAdmin)
-        external
-        returns (address tokenAddress)
-    {
-        if (block.chainid == tokenConfig.originatingChainId) revert OnlyNonOriginatingChains();
-        tokenAddress = ClankerDeployer.deployToken(tokenConfig, tokenAdmin, TOKEN_SUPPLY);
-    }
-
     // Deploy a token with a custom protocol reward recipient,
     // only protocol admins can call this function
     function deployTokenWithCustomTeamRewardRecipient(

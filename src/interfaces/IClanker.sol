@@ -112,10 +112,6 @@ interface IClanker {
     function setAdmin(address admin, bool isAdmin) external;
     function claimRewards(address token) external;
 
-    function deployTokenZeroSupply(TokenConfig memory tokenConfig, address tokenAdmin)
-        external
-        returns (address tokenAddress);
-
     function deployTokenWithCustomTeamRewardRecipient(
         DeploymentConfig memory deploymentConfig,
         address teamRewardRecipient
