@@ -17,13 +17,15 @@ As Clanker deploys tokens, it initiates 1% fee Uniswap V3 pools on Base. As each
 
 Check out our [dune dashboards](https://dune.com/clanker_protection_team) for token stats and our website [clanker.world](https://clanker.world) to see the clanker tokens in action and to launch a token from a form interface.
 
-### v3.1.0-no-superchain (---- Mainnet), tag: [v3.1-no-superchain](https://github.com/clanker-devco/v3.1-contracts/releases/tag/v3.1-non-superchains)
-coming soon
-
 ### v3.1.0 (Base Mainnet), tag: [v3.1](https://github.com/clanker-devco/v3.1-contracts/releases/tag/v3.1)
 - Clanker Factory (v3.1.0): [0x2A787b2362021cC3eEa3C24C4748a6cD5B687382](https://basescan.org/address/0x2A787b2362021cC3eEa3C24C4748a6cD5B687382)
 - LpLockerv2 (v3.1.0): [0x33e2Eda238edcF470309b8c6D228986A1204c8f9](https://basescan.org/address/0x33e2Eda238edcF470309b8c6D228986A1204c8f9)
 - ClankerVault (v3.1.0): [0x42A95190B4088C88Dd904d930c79deC1158bF09D](https://basescan.org/address/0x42A95190B4088C88Dd904d930c79deC1158bF09D)
+
+### v3.1.0 (Abstract Mainnet), tag: [v3.1-no-superchain](https://github.com/clanker-devco/v3.1-contracts/releases/tag/v3.1-non-superchains)
+- Clanker Factory (v3.1.0): [0x043ac6264F5A45c7518DC480b348Da41bdabbac2](https://abscan.org/address/0x043ac6264F5A45c7518DC480b348Da41bdabbac2)
+- LpLockerv2 (v3.1.0): [0xF5eBBd10d2faF7970dBdb9E960639ABCd612c48D](https://abscan.org/address/0xF5eBBd10d2faF7970dBdb9E960639ABCd612c48D)
+- ClankerVault (v3.1.0): [0x858eaD172d10b3E2Fc20F9C80726a2735c7B7a4B](https://abscan.org/address/0x858eaD172d10b3E2Fc20F9C80726a2735c7B7a4B)
 
 ### v3.1.0 (Base Sepolia)
 - Clanker Factory (v3.1.0): [0x2A787b2362021cC3eEa3C24C4748a6cD5B687382](https://sepolia.basescan.org/address/0x2A787b2362021cC3eEa3C24C4748a6cD5B687382)
